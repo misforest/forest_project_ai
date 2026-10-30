@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>林業署 AI 小幫手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f2ea; --surface: #fffdf7; --ink: #1d281f; --muted: #5a685d;
+    --line: #dad6c8; --forest: #2c5a37; --forest-ink: #fffdf7; --forest-soft: #e2ebe0;
+    --moss: #6b7f30; --amber: #8a6512; --amber-soft: #f8edd2; --line-green: #06c755;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121815; --surface: #1a221d; --ink: #e6ebe5;
+      --muted: #a1aea3; --line: #2c372f; --forest: #8cc498; --forest-ink: #10170f;
+      --forest-soft: #223026; --moss: #b6c977; --amber: #e3c46f; --amber-soft: #2c2514;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121815; --surface: #1a221d; --ink: #e6ebe5; --muted: #a1aea3; --line: #2c372f;
+    --forest: #8cc498; --forest-ink: #10170f; --forest-soft: #223026; --moss: #b6c977;
+    --amber: #e3c46f; --amber-soft: #2c2514;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Noto Sans TC", system-ui, sans-serif; line-height: 1.7; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+
+  /* Hero */
+  .hero { padding: 56px 0 36px; }
+  .eyebrow { color: var(--moss); font-weight: 500; letter-spacing: .1em; font-size: .88rem; margin: 0 0 10px; }
+  h1 { font-family: "Noto Serif TC", serif; font-size: clamp(1.8rem, 5vw, 2.7rem); line-height: 1.3; margin: 0 0 12px; }
+  .hero p.sub { color: var(--muted); margin: 0; max-width: 40em; }
+  .stats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 4px 14px; font-size: .9rem; color: var(--muted); }
+  .stat b { color: var(--forest); font-weight: 700; margin-right: 4px; }
+
+  /* Search */
+  .search { margin: 0 0 8px; position: relative; }
+  .search input { width: 100%; font: inherit; color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 12px 40px; }
+  .search input:focus { outline: 2px solid var(--forest); outline-offset: 1px; }
+  .search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+  .empty { display: none; color: var(--muted); padding: 24px 0; text-align: center; }
+
+  /* Sections */
+  section { padding: 28px 0 8px; }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+  .sec-no { font-family: "Noto Serif TC", serif; color: var(--forest); font-size: 1.4rem; font-weight: 700; }
+  h2 { font-family: "Noto Serif TC", serif; font-size: 1.4rem; margin: 0; }
+  .sec-lead { color: var(--muted); margin: 0 0 18px; }
+  h3 { font-size: 1rem; font-weight: 500; color: var(--muted); margin: 24px 0 12px;
+    display: flex; align-items: center; gap: 10px; }
+  h3::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  /* Featured (綜合服務) */
+  .featured { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .feat { background: var(--forest); color: var(--forest-ink); border-radius: 14px; padding: 22px;
+    display: flex; flex-direction: column; gap: 10px; text-decoration: none; transition: transform .15s; }
+  .feat:hover { transform: translateY(-2px); }
+  .feat .kind { font-size: .8rem; opacity: .8; letter-spacing: .06em; }
+  .feat .name { font-size: 1.2rem; font-weight: 700; }
+  .feat .desc { font-size: .92rem; opacity: .85; }
+  .feat .go { margin-top: auto; font-weight: 500; }
+  .feat.line { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+  .feat.line .go { color: var(--line-green); }
+  .feat.line .kind { color: var(--muted); opacity: 1; }
+  .feat.line .desc { color: var(--muted); opacity: 1; }
+
+  /* Assistant cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  a.bot { display: flex; align-items: center; gap: 14px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    text-decoration: none; color: var(--ink); transition: border-color .15s, transform .15s; }
+  a.bot:hover { border-color: var(--forest); transform: translateY(-1px); }
+  .ico { flex: none; width: 40px; height: 40px; border-radius: 10px; background: var(--forest-soft);
+    color: var(--forest); display: grid; place-items: center; font-size: 1.15rem; }
+  .bot .txt { flex: 1; min-width: 0; }
+  .bot .t { font-weight: 500; line-height: 1.45; }
+  .bot .s { font-size: .82rem; color: var(--muted); }
+  .bot .arrow { color: var(--muted); flex: none; }
+  .bot .flag { display: block; margin-top: 2px; font-size: .78rem; color: var(--amber); }
+
+  footer { margin-top: 40px; padding: 20px 0 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>林業署應用 Maiagent AI 小幫手</h1>
+    <p class="sub">集中列出本署建置的 AI 助理入口：一個涵蓋法規、立委模擬題與輿情的綜合詢答服務，以及依業務與行政需求建置的專用小幫手。</p>
+    <div class="stats">
+      <span class="stat"><b>2</b>綜合服務入口</span>
+      <span class="stat"><b>4</b>業務管理</span>
+      <span class="stat"><b>4</b>行政管理</span>
+    </div>
+  </header>
+
+  <div class="search">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="搜尋小幫手，例如：造林、輿情、法規" aria-label="搜尋小幫手">
+  </div>
+
+  <section data-sec>
+    <div class="sec-head"><span class="sec-no">一</span><h2>綜合服務</h2></div>
+    <p class="sec-lead">森林資源 AI 詢答服務（包括法規、立委模擬題、輿情等相關業務資訊知識庫）</p>
+    <div class="featured">
+      <a class="feat item" data-k="森林資源 綜合 web 網頁 法規 立委 輿情" href="https://chat.maiagent.ai/web-chats/445dc5af-e617-454b-97df-972832522575" target="_blank" rel="noopener">
+        <span class="kind">WEB 版</span>
+        <span class="name">森林資源 AI 詢答服務</span>
+        <span class="desc">在瀏覽器直接對話，適合辦公室電腦使用。</span>
+        <span class="go">開啟對話 →</span>
+      </a>
+      <a class="feat line item" data-k="森林資源 綜合 line 手機 林業署AI助手服務" href="https://lin.ee/QiG4Qcjp" target="_blank" rel="noopener">
+        <span class="kind">LINE 版</span>
+        <span class="name">林業署 AI 助手服務</span>
+        <span class="desc">加入 LINE 官方帳號，外勤時用手機也能詢問。</span>
+        <span class="go">加入 LINE 好友 →</span>
+      </a>
+    </div>
+  </section>
+
+  <section data-sec>
+    <div class="sec-head"><span class="sec-no">二</span><h2>專用服務</h2></div>
+    <p class="sec-lead">依業務單位需求建置，知識庫範圍聚焦於單一主題。</p>
+
+    <div data-group>
+      <h3>1. 業務管理</h3>
+      <div class="grid">
+        <a class="bot item" data-k="國土綠網 生態" href="https://chat.maiagent.ai/web-chats/ed6c0384-cecf-4a7f-ab1d-fab48b966ecd" target="_blank" rel="noopener">
+          <span class="ico">🌿</span><span class="txt"><span class="t">國土綠網 AI 小幫手</span><span class="s">業務管理</span></span><span class="arrow">↗</span>
+        </a>
+        <a class="bot item" data-k="山開 山坡地 開發 函釋" href="https://chat.maiagent.ai/web-chats/34aac828-f352-4ef4-8927-732bb0bdf24c" target="_blank" rel="noopener">
+          <span class="ico">⛰️</span><span class="txt"><span class="t">山開系統函釋 AI 助理</span><span class="s">業務管理</span></span><span class="arrow">↗</span>
+        </a>
+        <a class="bot item" data-k="獎勵 輔導 造林" href="https://chat.maiagent.ai/web-chats/1bd08202-2e40-41db-8e93-a39f7f4830d3" target="_blank" rel="noopener">
+          <span class="ico">🌲</span><span class="txt"><span class="t">獎勵輔導造林 AI 助理</span><span class="s">業務管理</span></span><span class="arrow">↗</span>
+        </a>
+        <a class="bot item" data-k="集水區 治理 堰塞湖" href="https://chat.maiagent.ai/web-chats/3b4771c1-2b49-47a4-8f0c-597d309040c4" target="_blank" rel="noopener">
+          <span class="ico">💧</span><span class="txt"><span class="t">集水區治理（堰塞湖）AI 助理</span><span class="s">業務管理</span></span><span class="arrow">↗</span>
+        </a>
+      </div>
+    </div>
+
+    <div data-group>
+      <h3>2. 行政管理</h3>
+      <div class="grid">
+        <a class="bot item" data-k="立委 質詢 立法院" href="https://chat.maiagent.ai/web-chats/f1ea313d-1781-4de6-a8e5-d3e12b90ddca" target="_blank" rel="noopener">
+          <span class="ico">🏛️</span><span class="txt"><span class="t">立委質詢 AI 小幫手</span><span class="s">行政管理</span></span><span class="arrow">↗</span>
+        </a>
+        <a class="bot item" data-k="輿情 新聞 媒體" href="https://chat.maiagent.ai/web-chats/ac0bd8a8-ebdb-41b6-9ac4-de1bde87a386" target="_blank" rel="noopener">
+          <span class="ico">📰</span><span class="txt"><span class="t">輿情 AI 小幫手</span><span class="s">行政管理</span></span><span class="arrow">↗</span>
+        </a>
+        <a class="bot item" data-k="署務會議 會議" href="https://chat.maiagent.ai/web-chats/8b37bb59-2146-4fbe-8c96-c0efb7436e83" target="_blank" rel="noopener">
+          <span class="ico">🗂️</span><span class="txt"><span class="t">署務會議 AI 小幫手</span><span class="s">行政管理</span></span><span class="arrow">↗</span>
+        </a>
+        <!-- 原文件網址最後一段只有 11 碼（一般為 12 碼），請確認正確網址後更新 -->
+        <a class="bot item" data-k="法規 法令" href="https://chat.maiagent.ai/web-chats/c7cd17ad-7e12-4e8e-899a-45737ff40487" target="_blank" rel="noopener">
+          <span class="ico">⚖️</span><span class="txt"><span class="t">法規 AI 小幫手</span><span class="s">行政管理</span></span><span class="arrow">↗</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <p class="empty" id="empty">找不到符合的小幫手，請換個關鍵字試試。</p>
+
+  <footer>資料來源：1151014 向署長報告－Maiagent 生成式 AI 應用驗測（Google 文件）· 各小幫手名稱前皆冠「林業署」</footer>
+</div>
+
+<script>
+  (function () {
+    var q = document.getElementById('q');
+    var items = Array.prototype.slice.call(document.querySelectorAll('.item'));
+    var groups = document.querySelectorAll('[data-group]');
+    var secs = document.querySelectorAll('[data-sec]');
+    var empty = document.getElementById('empty');
+    function visible(el) { return el.style.display !== 'none'; }
+    q.addEventListener('input', function () {
+      var v = q.value.trim().toLowerCase();
+      var hits = 0;
+      items.forEach(function (el) {
+        var hay = (el.textContent + ' ' + (el.getAttribute('data-k') || '')).toLowerCase();
+        var ok = !v || hay.indexOf(v) !== -1;
+        el.style.display = ok ? '' : 'none';
+        if (ok) hits++;
+      });
+      groups.forEach(function (g) {
+        g.style.display = Array.prototype.some.call(g.querySelectorAll('.item'), visible) ? '' : 'none';
+      });
+      secs.forEach(function (s) {
+        s.style.display = Array.prototype.some.call(s.querySelectorAll('.item'), visible) ? '' : 'none';
+      });
+      empty.style.display = hits ? 'none' : 'block';
+    });
+  })();
+</script>
+</body>
+</html>
